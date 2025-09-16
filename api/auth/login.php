@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Database connection settings
 $host = 'roscwoco0sc8w08kwsko8ko8';
-$db = 'blacnova_db'; // Using the default database name
+$db = 'default'; // Using the default database name
 $user = 'mariadb';
 $pass = 'JswmqQok4swQf1JDKQD1WE311UPXBBE6NYJv6jRSP91dbkZDYj5sMc5sehC1LQTu';
 $charset = 'utf8mb4';
@@ -165,4 +165,5 @@ try {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 ?>
+
 
