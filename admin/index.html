@@ -139,7 +139,7 @@
         // Load users from server
         async function loadUsers() {
             try {
-                const response = await fetch('/api/users/list.php');
+                const response = await fetch('api/users/list.php');
                 const data = await response.json();
                 
                 const usersList = document.getElementById('users-list');
@@ -190,7 +190,7 @@
             };
             
             try {
-                const response = await fetch('/api/users/create.php', {
+                const response = await fetch('api/users/create.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -218,7 +218,7 @@
             if (!confirm('Are you sure you want to delete this user?')) return;
             
             try {
-                const response = await fetch('/api/users/delete.php', {
+                const response = await fetch('api/users/delete.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
