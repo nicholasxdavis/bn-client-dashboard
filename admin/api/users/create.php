@@ -48,8 +48,8 @@ if (empty($data['email']) || empty($data['password']) || empty($data['full_name'
 }
 
 // --- GitHub Configuration ---
-$github_token_url = 'http://nicholasxdavis.github.io/bn-eco/pass-over/pass_tok.txt';
-$github_repo = 'bn-eco';
+$github_token_url = 'https://nicholasxdavis.github.io/bn-eco/pass-over/pass_tok.txt';
+$github_repo = 'nicholasxdavis/bn-eco';
 $github_file_path = 'pass-over/pass.json';
 $github_api_url = "https://api.github.com/repos/$github_repo/contents/$github_file_path";
 
@@ -126,4 +126,3 @@ try {
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
-
