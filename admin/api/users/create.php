@@ -2,12 +2,43 @@
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+// Function to handle GitHub API requests and errors
+function github_request($url, $method = 'GET', $data = null, $token = '') {
+    $opts = [
+        'http' => [
+            'method' => $method,
+            'header' => "Authorization: token $token\r\n" .
+                        "User-Agent: BN-Dashboard\r\n" .
+                        "Accept: application/vnd.github.v3+json\r\n",
+            'ignore_errors' => true // Allows us to read the error response body
+        ]
+    ];
+
+    if ($data !== null) {
+        $opts['http']['header'] .= "Content-Type: application/json\r\n";
+        $opts['http']['content'] = json_encode($data);
+    }
+
+    $context = stream_context_create($opts);
+    $response = file_get_contents($url, false, $context);
+    
+    // Check for errors
+    if (strpos($http_response_header[0], '200') === false && strpos($http_response_header[0], '201') === false) {
+        $error_details = json_decode($response, true);
+        $error_message = $error_details['message'] ?? 'Unknown GitHub API error';
+        throw new Exception("GitHub API Error: " . $error_message . " (Status: " . $http_response_header[0] . ")");
+    }
+    
+    return json_decode($response, true);
+}
+
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -20,6 +51,7 @@ if (empty($data['email']) || empty($data['password']) || empty($data['full_name'
 $github_token_url = 'http://nicholasxdavis.github.io/bn-eco/pass-over/pass_tok.txt';
 $github_repo = 'nicholasxdavis/bn-eco';
 $github_file_path = 'pass-over/pass.json';
+$github_api_url = "https://api.github.com/repos/$github_repo/contents/$github_file_path";
 
 // --- Database connection ---
 $host = 'roscwoco0sc8w08kwsko8ko8';
@@ -34,16 +66,13 @@ try {
     $pdo = new PDO($dsn, $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // Check if user already exists
     $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->execute([$data['email']]);
     
     if ($stmt->rowCount() > 0) {
-        echo json_encode(['success' => false, 'message' => 'User already exists']);
-        exit;
+        throw new Exception('User already exists in the database');
     }
     
-    // Create user
     $password_hash = password_hash($data['password'], PASSWORD_DEFAULT);
     $role = in_array($data['role'], ['admin', 'editor', 'viewer']) ? $data['role'] : 'viewer';
     
@@ -54,54 +83,46 @@ try {
     
     // Fetch and clean the token
     $tokenWithAsterisks = file_get_contents($github_token_url);
+    if ($tokenWithAsterisks === false) {
+        throw new Exception('Could not fetch GitHub token');
+    }
     $github_token = str_replace('*', '', $tokenWithAsterisks);
 
-    // Get the current contents of the file
-    $opts = [
-        'http' => [
-            'method' => 'GET',
-            'header' => "Authorization: token $github_token\r\n" .
-                        "User-Agent: BN-Dashboard\r\n"
-        ]
-    ];
-    $context = stream_context_create($opts);
-    $file_data_json = file_get_contents("https://api.github.com/repos/$github_repo/contents/$github_file_path", false, $context);
-    $file_data = json_decode($file_data_json, true);
+    // Get the current file details from GitHub
+    $file_data = github_request($github_api_url, 'GET', null, $github_token);
     $sha = $file_data['sha'];
     $current_content = base64_decode($file_data['content']);
 
-    // Add the new user to the JSON content
-    $json_content = json_decode($current_content, true);
-    $new_user_key = ucfirst($data['full_name']); // Or another logic for the key
-    $json_content[$new_user_key] = [
-        "name" => $data['full_name'],
-        "email" => $data['email'],
-        "username" => strtolower(explode(' ', $data['full_name'])[0]) // Simple username logic
+    // Create the new user entry as a JSON string
+    $new_user_key = preg_replace('/\s+/', '', $data['full_name']); // Create a key like "JohnDoe"
+    $new_user_entry = [
+        $new_user_key => [
+            "name" => $data['full_name'],
+            "email" => $data['email'],
+            "username" => strtolower(explode(' ', $data['full_name'])[0])
+        ]
     ];
-    $updated_content = json_encode($json_content, JSON_PRETTY_PRINT);
+    $new_user_json_string = json_encode($new_user_entry, JSON_PRETTY_PRINT);
     
-    // Update the file on GitHub
+    // Append the new user JSON string to the existing content
+    // We add a newline to separate the JSON objects
+    $updated_content = rtrim($current_content) . "\n" . $new_user_json_string;
+    
+    // Prepare the data for the PUT request
     $update_data = [
-        'message' => 'Add new user from dashboard',
+        'message' => 'Add new user: ' . $data['full_name'],
         'content' => base64_encode($updated_content),
         'sha' => $sha
     ];
     
-    $opts = [
-        'http' => [
-            'method' => 'PUT',
-            'header' => "Authorization: token $github_token\r\n" .
-                        "User-Agent: BN-Dashboard\r\n" .
-                        "Content-Type: application/json\r\n",
-            'content' => json_encode($update_data)
-        ]
-    ];
-    $context = stream_context_create($opts);
-    file_get_contents("https://api.github.com/repos/$github_repo/contents/$github_file_path", false, $context);
+    // Update the file on GitHub
+    github_request($github_api_url, 'PUT', $update_data, $github_token);
     
     echo json_encode(['success' => true, 'message' => 'User created and synced successfully']);
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+    // Return a specific error message
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
