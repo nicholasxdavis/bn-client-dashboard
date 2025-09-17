@@ -9,36 +9,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Function to handle GitHub API requests and errors
-function github_request($url, $method = 'GET', $data = null, $token = '') {
-    $opts = [
-        'http' => [
-            'method' => $method,
-            'header' => "Authorization: token $token\r\n" .
-                        "User-Agent: BN-Dashboard\r\n" .
-                        "Accept: application/vnd.github.v3+json\r\n",
-            'ignore_errors' => true // Allows us to read the error response body
-        ]
+// A more robust function to handle GitHub API requests using cURL
+function github_request_curl($url, $method = 'GET', $data = null, $token = '') {
+    $ch = curl_init();
+
+    $headers = [
+        "Authorization: token $token",
+        "User-Agent: BN-Dashboard",
+        "Accept: application/vnd.github.v3+json"
     ];
 
     if ($data !== null) {
-        $opts['http']['header'] .= "Content-Type: application/json\r\n";
-        $opts['http']['content'] = json_encode($data);
+        $payload = json_encode($data);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        $headers[] = "Content-Type: application/json";
+        $headers[] = "Content-Length: " . strlen($payload);
     }
 
-    $context = stream_context_create($opts);
-    $response = file_get_contents($url, false, $context);
-    
-    // Check for errors
-    if (strpos($http_response_header[0], '200') === false && strpos($http_response_header[0], '201') === false) {
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_FAILONERROR, false); // Allow us to get the error response body
+
+    $response = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($http_code >= 400) {
         $error_details = json_decode($response, true);
         $error_message = $error_details['message'] ?? 'Unknown GitHub API error';
-        throw new Exception("GitHub API Error: " . $error_message . " (Status: " . $http_response_header[0] . ")");
+        throw new Exception("GitHub API Error: " . $error_message . " (Status Code: " . $http_code . ")");
     }
     
     return json_decode($response, true);
 }
-
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -47,13 +52,12 @@ if (empty($data['email']) || empty($data['password']) || empty($data['full_name'
     exit;
 }
 
-// --- GitHub Configuration ---
+// --- Configuration ---
 $github_token_url = 'https://nicholasxdavis.github.io/bn-eco/pass-over/pass_tok.txt';
 $github_repo = 'nicholasxdavis/bn-eco';
 $github_file_path = 'pass-over/pass.json';
 $github_api_url = "https://api.github.com/repos/$github_repo/contents/$github_file_path";
 
-// --- Database connection ---
 $host = 'roscwoco0sc8w08kwsko8ko8';
 $db = 'default';
 $user = 'mariadb';
@@ -61,7 +65,7 @@ $pass = 'JswmqQok4swQf1JDKQD1WE311UPXBBE6NYJv6jRSP91dbkZDYj5sMc5sehC1LQTu';
 $charset = 'utf8mb4';
 
 try {
-    // --- 1. Add user to the database ---
+    // --- 1. Database Operation ---
     $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
     $pdo = new PDO($dsn, $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -79,22 +83,22 @@ try {
     $stmt = $pdo->prepare("INSERT INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)");
     $stmt->execute([$data['email'], $password_hash, $data['full_name'], $role]);
 
-    // --- 2. Update the JSON file on GitHub ---
-    
-    // Fetch and clean the token
+    // --- 2. GitHub API Operation ---
     $tokenWithAsterisks = file_get_contents($github_token_url);
     if ($tokenWithAsterisks === false) {
         throw new Exception('Could not fetch GitHub token');
     }
     $github_token = str_replace('*', '', $tokenWithAsterisks);
 
-    // Get the current file details from GitHub
-    $file_data = github_request($github_api_url, 'GET', null, $github_token);
+    $file_data = github_request_curl($github_api_url, 'GET', null, $github_token);
+    
+    if (!isset($file_data['sha'])) {
+        throw new Exception('Could not retrieve file SHA from GitHub.');
+    }
     $sha = $file_data['sha'];
     $current_content = base64_decode($file_data['content']);
 
-    // Create the new user entry as a JSON string
-    $new_user_key = preg_replace('/\s+/', '', $data['full_name']); // Create a key like "JohnDoe"
+    $new_user_key = preg_replace('/\s+/', '', $data['full_name']);
     $new_user_entry = [
         $new_user_key => [
             "name" => $data['full_name'],
@@ -104,24 +108,20 @@ try {
     ];
     $new_user_json_string = json_encode($new_user_entry, JSON_PRETTY_PRINT);
     
-    // Append the new user JSON string to the existing content
-    // We add a newline to separate the JSON objects
+    // Append new user with a newline to separate from previous entries
     $updated_content = rtrim($current_content) . "\n" . $new_user_json_string;
     
-    // Prepare the data for the PUT request
     $update_data = [
-        'message' => 'Add new user: ' . $data['full_name'],
+        'message' => 'Add new user via dashboard: ' . $data['full_name'],
         'content' => base64_encode($updated_content),
         'sha' => $sha
     ];
     
-    // Update the file on GitHub
-    github_request($github_api_url, 'PUT', $update_data, $github_token);
+    github_request_curl($github_api_url, 'PUT', $update_data, $github_token);
     
     echo json_encode(['success' => true, 'message' => 'User created and synced successfully']);
 
 } catch (Exception $e) {
-    // Return a specific error message
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
