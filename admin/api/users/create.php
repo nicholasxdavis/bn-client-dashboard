@@ -16,7 +16,12 @@ if (empty($data['email']) || empty($data['password']) || empty($data['full_name'
     exit;
 }
 
-// Database connection
+// --- GitHub Configuration ---
+$github_token_url = 'http://nicholasxdavis.github.io/bn-eco/pass-over/pass_tok.txt';
+$github_repo = 'nicholasxdavis/bn-eco';
+$github_file_path = 'pass-over/pass.json';
+
+// --- Database connection ---
 $host = 'roscwoco0sc8w08kwsko8ko8';
 $db = 'default';
 $user = 'mariadb';
@@ -24,6 +29,7 @@ $pass = 'JswmqQok4swQf1JDKQD1WE311UPXBBE6NYJv6jRSP91dbkZDYj5sMc5sehC1LQTu';
 $charset = 'utf8mb4';
 
 try {
+    // --- 1. Add user to the database ---
     $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
     $pdo = new PDO($dsn, $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -43,9 +49,59 @@ try {
     
     $stmt = $pdo->prepare("INSERT INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)");
     $stmt->execute([$data['email'], $password_hash, $data['full_name'], $role]);
+
+    // --- 2. Update the JSON file on GitHub ---
     
-    echo json_encode(['success' => true, 'message' => 'User created successfully']);
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    // Fetch and clean the token
+    $tokenWithAsterisks = file_get_contents($github_token_url);
+    $github_token = str_replace('*', '', $tokenWithAsterisks);
+
+    // Get the current contents of the file
+    $opts = [
+        'http' => [
+            'method' => 'GET',
+            'header' => "Authorization: token $github_token\r\n" .
+                        "User-Agent: BN-Dashboard\r\n"
+        ]
+    ];
+    $context = stream_context_create($opts);
+    $file_data_json = file_get_contents("https://api.github.com/repos/$github_repo/contents/$github_file_path", false, $context);
+    $file_data = json_decode($file_data_json, true);
+    $sha = $file_data['sha'];
+    $current_content = base64_decode($file_data['content']);
+
+    // Add the new user to the JSON content
+    $json_content = json_decode($current_content, true);
+    $new_user_key = ucfirst($data['full_name']); // Or another logic for the key
+    $json_content[$new_user_key] = [
+        "name" => $data['full_name'],
+        "email" => $data['email'],
+        "username" => strtolower(explode(' ', $data['full_name'])[0]) // Simple username logic
+    ];
+    $updated_content = json_encode($json_content, JSON_PRETTY_PRINT);
+    
+    // Update the file on GitHub
+    $update_data = [
+        'message' => 'Add new user from dashboard',
+        'content' => base64_encode($updated_content),
+        'sha' => $sha
+    ];
+    
+    $opts = [
+        'http' => [
+            'method' => 'PUT',
+            'header' => "Authorization: token $github_token\r\n" .
+                        "User-Agent: BN-Dashboard\r\n" .
+                        "Content-Type: application/json\r\n",
+            'content' => json_encode($update_data)
+        ]
+    ];
+    $context = stream_context_create($opts);
+    file_get_contents("https://api.github.com/repos/$github_repo/contents/$github_file_path", false, $context);
+    
+    echo json_encode(['success' => true, 'message' => 'User created and synced successfully']);
+
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
 }
 ?>
