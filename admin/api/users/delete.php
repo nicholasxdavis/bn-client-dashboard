@@ -17,7 +17,7 @@ if (empty($data['user_id'])) {
 }
 
 // Database connection
-$host = 'localhost';
+$host = 'roscwoco0sc8w08kwsko8ko8';
 $db = 'default';
 $user = 'mariadb';
 $pass = 'JswmqQok4swQf1JDKQD1WE311UPXBBE6NYJv6jRSP91dbkZDYj5sMc5sehC1LQTu';
