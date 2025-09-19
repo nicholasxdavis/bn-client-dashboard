@@ -76,7 +76,7 @@
                 </button>
             </div>
             <div class="flex items-center space-x-3">
-                <div class="text-right">
+                <div id="user-info-mobile" class="text-right">
                     <p class="font-medium text-sm">User</p>
                     <p class="text-xs text-gray-500">client@example.com</p>
                 </div>
@@ -139,7 +139,7 @@
             <div class="hidden md:flex justify-between items-center bg-light-bg border-b border-gray-200 p-4">
                 <h1 id="page-title" class="text-2xl font-medium">Overview</h1>
                 <div class="flex items-center space-x-4">
-                    <div class="text-right">
+                    <div id="user-info-desktop" class="text-right">
                         <p class="font-medium">User</p>
                         <p class="text-sm text-gray-500">client@example.com</p>
                     </div>
@@ -1107,40 +1107,6 @@
         </div>
     </div>
     
-    <div id="auth-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="text-xl font-medium">Login to Dashboard</h3>
-                <button class="modal-close text-gray-500 hover:text-primary">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-500 mb-1">Email</label>
-                        <input type="email" class="w-full px-4 py-2 rounded-3xl" placeholder="your@email.com">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-500 mb-1">Password</label>
-                        <input type="password" class="w-full px-4 py-2 rounded-3xl" placeholder="••••••••">
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="remember-me" class="h-4 w-4 rounded bg-white border-primary/30 text-primary focus:ring-primary">
-                            <label for="remember-me" class="ml-2 text-sm text-gray-700">Remember me</label>
-                        </div>
-                        <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline">Forgot password?</a>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary px-4 py-2 rounded-3xl modal-close">Cancel</button>
-                <button class="btn-primary px-4 py-2 rounded-3xl">Login</button>
-            </div>
-        </div>
-    </div>
-
     <div id="forgot-password-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1307,7 +1273,10 @@
             let authOverlay = null;
 
             function showAuthOverlay() {
-                if (authOverlay) return;
+                if (authOverlay) {
+                    authOverlay.style.display = 'flex';
+                    return;
+                }
                 // Create auth overlay
                 authOverlay = document.createElement('div');
                 authOverlay.style.cssText = `
@@ -1350,7 +1319,7 @@
                             
                             <p id="login-error" style="color: #ff4444; text-align: center; margin: 1rem 0 0; display: none;">Invalid credentials</p>
                         </form>
-                        <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline" style="text-align: center; display: block; margin-top: 1rem;">Forgot password?</a>
+                        <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline" style="text-align: center; display: block; margin-top: 1rem; color: #d4611c;">Forgot password?</a>
                     </div>
                 `;
                 
@@ -1385,6 +1354,7 @@
                             localStorage.setItem('blacnova_user', JSON.stringify(data.user));
                             localStorage.setItem('blacnova_token', data.token || '');
                             authOverlay.style.display = 'none';
+                            updateUserInfo();
                         } else {
                             errorElement.textContent = data.message || 'Invalid credentials';
                             errorElement.style.display = 'block';
@@ -1396,6 +1366,14 @@
                 });
             }
 
+            function updateUserInfo() {
+                const user = JSON.parse(localStorage.getItem('blacnova_user'));
+                if (user) {
+                    document.getElementById('user-info-desktop').innerHTML = `<p class="font-medium">${user.full_name}</p><p class="text-sm text-gray-500">${user.email}</p>`;
+                    document.getElementById('user-info-mobile').innerHTML = `<p class="font-medium text-sm">${user.full_name}</p><p class="text-xs text-gray-500">${user.email}</p>`;
+                }
+            }
+
             function checkAuth(forceShow = false) {
                 if (localStorage.getItem('blacnova_auth') !== 'authenticated') {
                     showAuthOverlay();
@@ -1404,6 +1382,7 @@
                 if (authOverlay) {
                     authOverlay.style.display = 'none';
                 }
+                updateUserInfo();
                 return true;
             }
 
@@ -1412,23 +1391,33 @@
                 localStorage.removeItem('blacnova_user');
                 localStorage.removeItem('blacnova_token');
                 await fetch('/api/auth/logout.php');
+                document.getElementById('user-info-desktop').innerHTML = `<p class="font-medium">User</p><p class="text-sm text-gray-500">client@example.com</p>`;
+                document.getElementById('user-info-mobile').innerHTML = `<p class="font-medium text-sm">User</p><p class="text-xs text-gray-500">client@example.com</p>`;
                 checkAuth(true);
             }
             
             document.getElementById('logout-btn').addEventListener('click', logout);
             document.getElementById('request-reset-btn').addEventListener('click', async () => {
                 const email = document.getElementById('reset-email').value;
+                if (!email) {
+                    showToast('Please enter your email address.', 'error');
+                    return;
+                }
                 const response = await fetch('/api/password_reset.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'request_reset', email })
                 });
-                const data = await response.json();
-                if (data.success) {
-                    showToast('Password reset link sent to your email.', 'success');
-                    document.getElementById('forgot-password-modal').classList.remove('active');
-                } else {
-                    showToast(data.message || 'An error occurred.', 'error');
+                try {
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('Password reset link sent to your email.', 'success');
+                        document.getElementById('forgot-password-modal').classList.remove('active');
+                    } else {
+                        showToast(data.message || 'An error occurred.', 'error');
+                    }
+                } catch (e) {
+                    showToast('An error occurred while processing your request.', 'error');
                 }
             });
 
