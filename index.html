@@ -1119,24 +1119,23 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm text-gray-500 mb-1">Email</label>
-                        <input type="email" id="login-email" class="w-full px-4 py-2 rounded-3xl" placeholder="your@email.com">
+                        <input type="email" class="w-full px-4 py-2 rounded-3xl" placeholder="your@email.com">
                     </div>
                     <div>
                         <label class="block text-sm text-gray-500 mb-1">Password</label>
-                        <input type="password" id="login-password" class="w-full px-4 py-2 rounded-3xl" placeholder="••••••••">
+                        <input type="password" class="w-full px-4 py-2 rounded-3xl" placeholder="••••••••">
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <input type="checkbox" id="remember-me" class="h-4 w-4 rounded bg-white border-primary/30 text-primary focus:ring-primary">
                             <label for="remember-me" class="ml-2 text-sm text-gray-700">Remember me</label>
                         </div>
-                        <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline">Forgot password?</a>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary px-4 py-2 rounded-3xl modal-close">Cancel</button>
-                <button class="btn-primary px-4 py-2 rounded-3xl" id="login-btn">Login</button>
+                <button class="btn-primary px-4 py-2 rounded-3xl">Login</button>
             </div>
  
         </div>
@@ -1217,16 +1216,14 @@
             'new-blog-btn': 'new-blog-modal',
             'new-blog-post-btn': 'new-blog-modal',
             'settings-btn': 'auth-modal',
-            'logout-btn': 'auth-modal',
-            'forgot-password-link': 'forgot-password-modal'
+            'logout-btn': 'auth-modal'
         };
         
         // Open modals
         Object.keys(modalButtons).forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {
-                button.addEventListener('click', (e) => {
-                    e.preventDefault();
+                button.addEventListener('click', () => {
                     const modalId = modalButtons[buttonId];
                     document.getElementById(modalId).classList.add('active');
                 });
@@ -1371,6 +1368,10 @@
                     <input type="password" id="login-password-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
                 </div>
                 
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+                    <a href="#" id="main-forgot-password-link" style="color: #d4611c; text-decoration: none; font-size: 0.9rem;">Forgot password?</a>
+                </div>
+                
                 <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
                     Sign In
                 </button>
@@ -1382,6 +1383,12 @@
     
     // Add to document
     document.body.appendChild(authOverlay);
+
+    // Forgot password link event listener
+    document.getElementById('main-forgot-password-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('forgot-password-modal').classList.add('active');
+    });
     
     // Handle form submission
     document.getElementById('login-form').addEventListener('submit', async function(e) {

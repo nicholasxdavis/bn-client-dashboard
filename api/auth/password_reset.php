@@ -3,10 +3,10 @@ require_once 'db_connect.php';
 
 // --- SERVER-SIDE EMAIL FUNCTION USING EmailJS REST API ---
 function sendPasswordResetEmail($email, $token, $customerName) {
-    $service_id = 'service_g3x1dzf';
-    $template_id = 'template_ptf2tzg';
-    $user_id = 'mGAM0CatzjBKJTVe9';
-    $accessToken = 'vvI_4F6Wh4tCZKXB8r2Kx'; // Your Private Key
+    $service_id = 'service_c1ddi0x';
+    $template_id = 'template_fakljk5';
+    $user_id = 'vSfGjeaE52Lj_2lav'; // Public Key
+    $accessToken = '0PQGh1CKPqu8REv5mnotS'; // Your Private Key
 
     $resetLink = "https://admin.blacnova.net/reset_password.html?token=" . $token; // Important: Replace with your actual domain and path
 
