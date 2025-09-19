@@ -1,4 +1,11 @@
 <?php
+// api/password_reset.php
+header('Content-Type: application/json');
+
+if (!file_exists('db_connect.php')) {
+    echo json_encode(['success' => false, 'message' => 'Database connection file not found.']);
+    exit;
+}
 require_once 'db_connect.php';
 
 // --- SERVER-SIDE EMAIL FUNCTION USING EmailJS REST API ---
@@ -43,9 +50,6 @@ function sendPasswordResetEmail($email, $token, $customerName) {
 }
 
 
-// Set the correct content type header
-header('Content-Type: application/json');
-
 $method = $_SERVER['REQUEST_METHOD'];
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -87,11 +91,9 @@ try {
             // Send the password reset email
             sendPasswordResetEmail($email, $token, $user['full_name']);
 
-            echo json_encode(['success' => true, 'message' => 'If a user with that email exists, a reset link will be sent.']);
-        } else {
-             // To prevent user enumeration, we send a generic success response even if the email is not found.
-             echo json_encode(['success' => true, 'message' => 'If a user with that email exists, a reset link will be sent.']);
         }
+        // To prevent user enumeration, we send a generic success response even if the email is not found.
+        echo json_encode(['success' => true, 'message' => 'If a user with that email exists, a reset link will be sent.']);
 
     // Action to perform the password update with a valid token
     } elseif ($data['action'] === 'perform_reset') {
