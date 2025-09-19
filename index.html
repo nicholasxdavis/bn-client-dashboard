@@ -77,8 +77,8 @@
             </div>
             <div class="flex items-center space-x-3">
                 <div class="text-right">
-                    <p class="font-medium text-sm">User</p>
-                    <p class="text-xs text-gray-500">client@example.com</p>
+                    <p class="font-medium text-sm" id="mobile-user-name">User</p>
+                    <p class="text-xs text-gray-500" id="mobile-user-email">client@example.com</p>
                 </div>
                 <img src="https://placehold.co/40x40/1a1a1a/d4611c?text=U" alt="User" class="w-8 h-8 rounded-full">
             </div>
@@ -140,8 +140,8 @@
                 <h1 id="page-title" class="text-2xl font-medium">Overview</h1>
                 <div class="flex items-center space-x-4">
                     <div class="text-right">
-                        <p class="font-medium">User</p>
-                        <p class="text-sm text-gray-500">client@example.com</p>
+                        <p class="font-medium" id="desktop-user-name">User</p>
+                        <p class="text-sm text-gray-500" id="desktop-user-email">client@example.com</p>
                     </div>
                     <img src="https://placehold.co/40x40/1a1a1a/d4611c?text=U" alt="User" class="w-10 h-10 rounded-full">
                     <button id="logout-btn" class="text-gray-600 hover:text-primary">
@@ -1127,8 +1127,8 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <input type="checkbox" id="remember-me" class="h-4 w-4 rounded bg-white border-primary/30 text-primary focus:ring-primary">
-                            <label for="remember-me" class="ml-2 text-sm text-gray-700">Remember me</label>
+                            <input type="checkbox" id="remember-me-placeholder" class="h-4 w-4 rounded bg-white border-primary/30 text-primary focus:ring-primary">
+                            <label for="remember-me-placeholder" class="ml-2 text-sm text-gray-700">Remember me</label>
                         </div>
                     </div>
                 </div>
@@ -1216,7 +1216,6 @@
             'new-blog-btn': 'new-blog-modal',
             'new-blog-post-btn': 'new-blog-modal',
             'settings-btn': 'auth-modal',
-            'logout-btn': 'auth-modal'
         };
         
         // Open modals
@@ -1279,28 +1278,6 @@
                 showToast(message, type);
             });
         });
-
-        // Forgot Password Form Submission
-        document.getElementById('forgot-password-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('reset-email').value;
-            try {
-                const response = await fetch('./api/auth/password_reset.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'request_reset', email: email })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('forgot-password-modal').classList.remove('active');
-                    showToast('If an account with that email exists, a password reset link has been sent.', 'success');
-                } else {
-                    showToast(data.message || 'An error occurred.', 'error');
-                }
-            } catch (error) {
-                showToast('A connection error occurred. Please try again.', 'error');
-            }
-        });
     </script>
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -1327,13 +1304,8 @@
 
         // Injectable Auth System for Blacnova Dashboard (Updated for PHP backend)
 (function() {
-    // Check if user is already authenticated
-    if (localStorage.getItem('blacnova_auth') === 'authenticated') {
-        return; // User is already logged in
-    }
-    
-    // Create auth overlay
     const authOverlay = document.createElement('div');
+    authOverlay.id = 'auth-overlay';
     authOverlay.style.cssText = `
         position: fixed;
         top: 0;
@@ -1346,83 +1318,114 @@
         align-items: center;
         z-index: 9999;
         font-family: 'Poppins', sans-serif;
+        transition: opacity 0.3s ease-in-out;
     `;
-    
-    // Create login form
-    authOverlay.innerHTML = `
-        <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <img src="img/bn.png" alt="Blacnova Logo" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
-                <h2 style="color: #fff; margin: 0; font-weight: 600;">Dashboard Access</h2>
-                <p style="color: #888; margin: 0.5rem 0 0;">Sign in to your dashboard</p>
-            </div>
-            
-            <form id="login-form">
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Email</label>
-                    <input type="email" id="login-email-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Password</label>
-                    <input type="password" id="login-password-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
-                </div>
-                
-                <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
-                    <a href="#" id="main-forgot-password-link" style="color: #d4611c; text-decoration: none; font-size: 0.9rem;">Forgot password?</a>
-                </div>
-                
-                <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
-                    Sign In
-                </button>
-                
-                <p id="login-error" style="color: #ff4444; text-align: center; margin: 1rem 0 0; display: none;">Invalid credentials</p>
-            </form>
-        </div>
-    `;
-    
-    // Add to document
-    document.body.appendChild(authOverlay);
 
-    // Forgot password link event listener
-    document.getElementById('main-forgot-password-link').addEventListener('click', (e) => {
+    function showLogin() {
+        authOverlay.innerHTML = `
+            <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <img src="img/bn.png" alt="Blacnova Logo" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
+                    <h2 style="color: #fff; margin: 0; font-weight: 600;">Dashboard Access</h2>
+                    <p style="color: #888; margin: 0.5rem 0 0;">Sign in to your dashboard</p>
+                </div>
+                
+                <form id="login-form">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Email</label>
+                        <input type="email" id="login-email-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Password</label>
+                        <input type="password" id="login-password-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <label style="display: flex; align-items: center; color: #ddd; font-size: 0.9rem;">
+                            <input type="checkbox" id="remember-me-main" style="margin-right: 0.5rem;">
+                            Remember Me
+                        </label>
+                        <a href="#" id="forgot-password-link-main" style="color: #d4611c; text-decoration: none; font-size: 0.9rem;">Forgot password?</a>
+                    </div>
+                    
+                    <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                        Sign In
+                    </button>
+                    
+                    <p id="login-error" style="color: #ff4444; text-align: center; margin: 1rem 0 0; display: none;">Invalid credentials</p>
+                </form>
+            </div>
+        `;
+        authOverlay.querySelector('#login-form').addEventListener('submit', handleLogin);
+        authOverlay.querySelector('#forgot-password-link-main').addEventListener('click', showForgotPassword);
+    }
+
+    function showForgotPassword(e) {
+        if(e) e.preventDefault();
+        authOverlay.innerHTML = `
+            <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <h2 style="color: #fff; margin: 0; font-weight: 600;">Reset Password</h2>
+                    <p style="color: #888; margin: 0.5rem 0 0;">Enter your email to receive a reset link</p>
+                </div>
+                
+                <form id="reset-form">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Email</label>
+                        <input type="email" id="reset-email-main" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
+                    </div>
+                    
+                    <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
+                        Send Reset Link
+                    </button>
+                </form>
+                <a href="#" id="back-to-login" style="display: block; text-align: center; color: #888; margin-top: 1.5rem; text-decoration: none;">Back to Sign In</a>
+            </div>
+        `;
+        authOverlay.querySelector('#reset-form').addEventListener('submit', handlePasswordReset);
+        authOverlay.querySelector('#back-to-login').addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
+    }
+
+    function showResetConfirmation() {
+        authOverlay.innerHTML = `
+            <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center;">
+                 <div style="color: #2ecc71; font-size: 4rem; margin-bottom: 1rem;">
+                    <i class="fas fa-check-circle"></i>
+                 </div>
+                <h2 style="color: #fff; margin: 0; font-weight: 600;">Check Your Inbox</h2>
+                <p style="color: #888; margin: 0.5rem 0 0;">A password reset link has been sent to your email.</p>
+                <a href="#" id="back-to-login-confirm" style="display: block; text-align: center; color: #888; margin-top: 1.5rem; text-decoration: none;">Back to Sign In</a>
+            </div>
+        `;
+        authOverlay.querySelector('#back-to-login-confirm').addEventListener('click', (e) => { e.preventDefault(); showLogin(); });
+    }
+
+    async function handleLogin(e) {
         e.preventDefault();
-        document.getElementById('forgot-password-modal').classList.add('active');
-    });
-    
-    // Handle form submission
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
         const email = document.getElementById('login-email-main').value;
         const password = document.getElementById('login-password-main').value;
+        const rememberMe = document.getElementById('remember-me-main').checked;
         const errorElement = document.getElementById('login-error');
         
         try {
-            // Send credentials to your PHP backend for verification
             const response = await fetch('/api/auth/login.php', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
-            
             const data = await response.json();
             
             if (data.success) {
-                // Successful login
-                localStorage.setItem('blacnova_auth', 'authenticated');
-                localStorage.setItem('blacnova_user', JSON.stringify(data.user));
-                localStorage.setItem('blacnova_token', data.token || '');
+                const storage = rememberMe ? localStorage : sessionStorage;
+                storage.setItem('blacnova_auth', 'authenticated');
+                storage.setItem('blacnova_user', JSON.stringify(data.user));
+                storage.setItem('blacnova_token', data.token || '');
                 
-                // Remove the auth overlay
-                authOverlay.style.display = 'none';
-                
-                // Optional: Refresh the page to load authenticated content
-                // window.location.reload();
+                updateUserInfo(data.user);
+                authOverlay.style.opacity = '0';
+                setTimeout(() => authOverlay.style.display = 'none', 300);
             } else {
-                // Show error
                 errorElement.textContent = data.message || 'Invalid credentials';
                 errorElement.style.display = 'block';
             }
@@ -1431,7 +1434,64 @@
             errorElement.textContent = 'Connection error. Please try again.';
             errorElement.style.display = 'block';
         }
-    });
+    }
+
+    async function handlePasswordReset(e) {
+        e.preventDefault();
+        const email = document.getElementById('reset-email-main').value;
+        try {
+            const response = await fetch('/api/auth/password_reset.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'request_reset', email: email })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showResetConfirmation();
+            } else {
+                alert(data.message || 'An error occurred.');
+            }
+        } catch (error) {
+            alert('A connection error occurred. Please try again.');
+        }
+    }
+
+    function updateUserInfo(user) {
+        document.getElementById('desktop-user-name').textContent = user.full_name || 'User';
+        document.getElementById('desktop-user-email').textContent = user.email;
+        document.getElementById('mobile-user-name').textContent = user.full_name || 'User';
+        document.getElementById('mobile-user-email').textContent = user.email;
+    }
+
+    function handleLogout() {
+        fetch('/api/auth/logout.php')
+        .then(() => {
+            localStorage.removeItem('blacnova_auth');
+            localStorage.removeItem('blacnova_user');
+            localStorage.removeItem('blacnova_token');
+            sessionStorage.removeItem('blacnova_auth');
+            sessionStorage.removeItem('blacnova_user');
+            sessionStorage.removeItem('blacnova_token');
+            
+            authOverlay.style.display = 'flex';
+            setTimeout(() => authOverlay.style.opacity = '1', 10);
+            showLogin();
+        });
+    }
+
+    document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+    const user = JSON.parse(localStorage.getItem('blacnova_user') || sessionStorage.getItem('blacnova_user'));
+    const isAuthenticated = localStorage.getItem('blacnova_auth') === 'authenticated' || sessionStorage.getItem('blacnova_auth') === 'authenticated';
+
+    document.body.appendChild(authOverlay);
+
+    if (isAuthenticated && user) {
+        updateUserInfo(user);
+        authOverlay.style.display = 'none';
+    } else {
+        showLogin();
+    }
 })();
     </script>
     <script src="BN-Dashboard.js"></script>
