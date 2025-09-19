@@ -18,21 +18,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SPY1G645JS"></script>
     <link rel="stylesheet" type="text/css" href="dashboard.css">
 </head>
 <body class="min-h-screen antialiased">
     <div class="flex h-screen">
-        <!-- Sidebar Navigation -->
         <div class="w-64 bg-dark-bg border-r border-white/10 p-4 hidden md:flex flex-col h-screen" style="background: #000000;">
-            <!-- Logo Section -->
             <div class="flex items-center space-x-3 mb-8">
                 <img src="img/bn.png" alt="Blacnova Logo" class="w-10 h-10">
                 <h1 class="text-xl font-medium text-white">Dashboard</h1>
             </div>
 
-            <!-- Navigation -->
             <nav class="space-y-1">
                 <div class="nav-item active-nav p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="overview">
                     <i class="fas fa-tachometer-alt w-5 text-center"></i>
@@ -68,13 +64,11 @@
                 </div>
             </nav>
 
-            <!-- Footer at bottom -->
             <footer class="mt-auto text-center text-xs text-white/40 pt-6">
                 © 2025 Blacnova Development
             </footer>
         </div>
         
-        <!-- Mobile Header -->
         <div class="md:hidden fixed top-0 left-0 right-0 bg-light-bg border-b border-gray-200 p-4 z-10 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <button id="mobile-menu-button" class="text-gray-600 hover:text-primary">
@@ -90,10 +84,8 @@
             </div>
         </div>
         
-        <!-- Mobile Sidebar (Hidden by default) -->
         <div id="mobile-sidebar" class="fixed inset-0 bg-black bg-opacity-70 z-20 hidden md:hidden">
             <div class="w-64 h-full bg-black border-r border-white/10 p-4 flex flex-col">
-                <!-- Header -->
                 <div class="flex justify-between items-center mb-8">
                     <div class="flex items-center space-x-3">
                         <img src="img/bn.png" alt="Blacnova Logo" class="w-10 h-10">
@@ -103,7 +95,6 @@
                     </button>
                 </div>
 
-                <!-- Nav -->
                 <nav class="space-y-1 mb-8">
                     <div class="nav-item active-nav p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="overview">
                         <i class="fas fa-tachometer-alt w-5 text-center"></i>
@@ -144,9 +135,7 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
         <div class="flex-1 overflow-y-auto pt-16 md:pt-0 bg-fafbfb" style="background: #fafbfb;">
-            <!-- Desktop Header -->
             <div class="hidden md:flex justify-between items-center bg-light-bg border-b border-gray-200 p-4">
                 <h1 id="page-title" class="text-2xl font-medium">Overview</h1>
                 <div class="flex items-center space-x-4">
@@ -161,11 +150,8 @@
                 </div>
             </div>
             
-            <!-- Pages Container -->
             <div id="pages-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <!-- Overview Page -->
                 <div id="overview-page" class="page active">
-                    <!-- Stats Overview -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div class="stat-card glass-card p-6 rounded-3xl rounded-3xl">
                             <div class="flex items-center justify-between">
@@ -220,11 +206,8 @@
                         </div>
                     </div>
                     
-                    <!-- Main Content Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <!-- Left Column -->
                         <div class="lg:col-span-2 space-y-6">
-                            <!-- Traffic Chart -->
                             <div class="glass-card p-6 rounded-3xl">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-xl font-medium">Website Traffic</h2>
@@ -235,14 +218,12 @@
                                     </select>
                                 </div>
                                 <div class="h-64">
-                                    <!-- Chart placeholder - would be replaced with Chart.js or similar -->
                                     <div class="w-full h-full flex items-center justify-center bg-gray-100 rounded-3xl">
                                         <p class="text-gray-500">Traffic chart will appear here</p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Recent Activity -->
                             <div class="glass-card p-6 rounded-3xl">
                                 <div class="flex justify-between items-center mb-4">
                                     <h2 class="text-xl font-medium">Recent Activity</h2>
@@ -285,9 +266,7 @@
                             </div>
                         </div>
                         
-                        <!-- Right Column -->
                         <div class="lg:col-span-1 space-y-6">
-                            <!-- Quick Actions -->
                             <div class="glass-card p-6 rounded-3xl">
                                 <h2 class="text-xl font-medium mb-4">Quick Actions</h2>
                                 <div class="grid grid-cols-2 gap-3">
@@ -310,7 +289,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Website Status -->
                             <div class="glass-card p-6 rounded-3xl">
                                 <h2 class="text-xl font-medium mb-4">Website Status</h2>
                                 <div class="space-y-4">
@@ -332,7 +310,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Recent Comments -->
                             <div class="glass-card p-6 rounded-3xl">
                                 <h2 class="text-xl font-medium mb-4">Recent Comments</h2>
                                 <div class="space-y-4">
@@ -362,7 +339,6 @@
                     </div>
                 </div>
                 
-                <!-- Appearance Page -->
                 <div id="appearance-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -373,7 +349,6 @@
                     
                     <div class="glass-card p-6 rounded-3xl">
                         <div class="space-y-6">
-                            <!-- Color Palette Section -->
                             <div>
                                 <h3 class="font-medium mb-4">Color Palette</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -449,7 +424,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Font Palette Section -->
                             <div>
                                 <h3 class="font-medium mb-4">Font Palette</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -514,7 +488,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Branding Section -->
                             <div>
                                 <h3 class="font-medium mb-4">Branding</h3>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -572,7 +545,6 @@
                     </div>
                 </div>
                 
-                <!-- Content & Media Page -->
                 <div id="content-media-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -660,7 +632,6 @@
                     </div>
                 </div>
                 
-                <!-- Blog Page -->
                 <div id="blog-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -710,7 +681,6 @@
                     </div>
                 </div>
                 
-                <!-- Submissions Page -->
                 <div id="submissions-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -803,7 +773,6 @@
                     </div>
                 </div>
                 
-                <!-- E-commerce Page -->
                 <div id="ecommerce-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -876,7 +845,6 @@
                     </div>
                 </div>
                 
-                <!-- Settings Page -->
                 <div id="settings-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -960,7 +928,6 @@
                     </div>
                 </div>
                 
-                <!-- Support Page -->
                 <div id="support-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -1039,8 +1006,6 @@
         </div>
     </div>
     
-    <!-- Modals -->
-    <!-- New Page Modal -->
     <div id="new-page-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1074,7 +1039,6 @@
         </div>
     </div>
     
-    <!-- Upload Media Modal -->
     <div id="upload-media-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1104,7 +1068,6 @@
         </div>
     </div>
     
-    <!-- New Blog Post Modal -->
     <div id="new-blog-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1144,7 +1107,6 @@
         </div>
     </div>
     
-    <!-- Auth Modal -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1168,7 +1130,7 @@
                             <input type="checkbox" id="remember-me" class="h-4 w-4 rounded bg-white border-primary/30 text-primary focus:ring-primary">
                             <label for="remember-me" class="ml-2 text-sm text-gray-700">Remember me</label>
                         </div>
-                        <a href="#" class="text-sm text-primary hover:underline">Forgot password?</a>
+                        <a href="#" id="forgot-password-link" class="text-sm text-primary hover:underline">Forgot password?</a>
                     </div>
                 </div>
             </div>
@@ -1176,11 +1138,33 @@
                 <button class="btn-secondary px-4 py-2 rounded-3xl modal-close">Cancel</button>
                 <button class="btn-primary px-4 py-2 rounded-3xl">Login</button>
             </div>
- 
+        </div>
+    </div>
+
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-xl font-medium">Reset Password</h3>
+                <button class="modal-close text-gray-500 hover:text-primary">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm text-gray-500 mb-4">Enter your email address and we will send you a link to reset your password.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm text-gray-500 mb-1">Email</label>
+                        <input type="email" id="reset-email" class="w-full px-4 py-2 rounded-3xl" placeholder="your@email.com">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary px-4 py-2 rounded-3xl modal-close">Cancel</button>
+                <button id="request-reset-btn" class="btn-primary px-4 py-2 rounded-3xl">Send Reset Link</button>
+            </div>
         </div>
     </div>
     
-    <!-- Toast Notification -->
     <div id="toast-notification"></div>
     
     <script>
@@ -1229,9 +1213,7 @@
             'upload-media-btn': 'upload-media-modal',
             'upload-content-media-btn': 'upload-media-modal',
             'new-blog-btn': 'new-blog-modal',
-            'new-blog-post-btn': 'new-blog-modal',
-            'settings-btn': 'auth-modal',
-            'logout-btn': 'auth-modal'
+            'new-blog-post-btn': 'new-blog-modal'
         };
         
         // Open modals
@@ -1239,8 +1221,10 @@
             const button = document.getElementById(buttonId);
             if (button) {
                 button.addEventListener('click', () => {
-                    const modalId = modalButtons[buttonId];
-                    document.getElementById(modalId).classList.add('active');
+                    if (checkAuth()) {
+                        const modalId = modalButtons[buttonId];
+                        document.getElementById(modalId).classList.add('active');
+                    }
                 });
             }
         });
@@ -1294,6 +1278,55 @@
                 showToast(message, type);
             });
         });
+
+        // --- New Auth logic ---
+        const authModal = document.getElementById('auth-modal');
+        const forgotPasswordModal = document.getElementById('forgot-password-modal');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        function checkAuth() {
+            if (localStorage.getItem('blacnova_auth') === 'authenticated') {
+                authModal.classList.remove('active');
+                return true;
+            } else {
+                authModal.classList.add('active');
+                return false;
+            }
+        }
+
+        async function logout() {
+            localStorage.removeItem('blacnova_auth');
+            localStorage.removeItem('blacnova_user');
+            localStorage.removeItem('blacnova_token');
+            await fetch('/api/auth/logout.php');
+            checkAuth();
+        }
+
+        logoutBtn.addEventListener('click', logout);
+        
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            authModal.classList.remove('active');
+            forgotPasswordModal.classList.add('active');
+        });
+
+        document.getElementById('request-reset-btn').addEventListener('click', async () => {
+            const email = document.getElementById('reset-email').value;
+            const response = await fetch('/api/password_reset.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'request_reset', email })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Password reset link sent to your email.', 'success');
+                forgotPasswordModal.classList.remove('active');
+            } else {
+                showToast(data.message || 'An error occurred.', 'error');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', checkAuth);
     </script>
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -1319,103 +1352,39 @@
         const analytics = getAnalytics(app);
 
         // Injectable Auth System for Blacnova Dashboard (Updated for PHP backend)
-(function() {
-    // Check if user is already authenticated
-    if (localStorage.getItem('blacnova_auth') === 'authenticated') {
-        return; // User is already logged in
-    }
-    
-    // Create auth overlay
-    const authOverlay = document.createElement('div');
-    authOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        font-family: 'Poppins', sans-serif;
-    `;
-    
-    // Create login form
-    authOverlay.innerHTML = `
-        <div style="background: #111; padding: 2rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <img src="img/bn.png" alt="Blacnova Logo" style="width: 60px; height: 60px; margin: 0 auto 1rem;">
-                <h2 style="color: #fff; margin: 0; font-weight: 600;">Dashboard Access</h2>
-                <p style="color: #888; margin: 0.5rem 0 0;">Sign in to your dashboard</p>
-            </div>
-            
-            <form id="login-form">
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Email</label>
-                    <input type="email" id="login-email" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
-                </div>
+        (function() {
+            const authModal = document.getElementById('auth-modal');
+            const loginForm = authModal.querySelector('form');
+            if (!loginForm) return;
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; color: #ddd; margin-bottom: 0.5rem; font-size: 0.9rem;">Password</label>
-                    <input type="password" id="login-password" required style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #222; color: #fff; font-size: 1rem; box-sizing: border-box;">
-                </div>
+                const email = authModal.querySelector('input[type="email"]').value;
+                const password = authModal.querySelector('input[type="password"]').value;
                 
-                <button type="submit" style="width: 100%; padding: 12px; border-radius: 12px; border: none; background: #d4611c; color: white; font-weight: 600; font-size: 1rem; cursor: pointer; transition: background 0.2s;">
-                    Sign In
-                </button>
-                
-                <p id="login-error" style="color: #ff4444; text-align: center; margin: 1rem 0 0; display: none;">Invalid credentials</p>
-            </form>
-        </div>
-    `;
-    
-    // Add to document
-    document.body.appendChild(authOverlay);
-    
-    // Handle form submission
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const errorElement = document.getElementById('login-error');
-        
-        try {
-            // Send credentials to your PHP backend for verification
-            const response = await fetch('/api/auth/login.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
+                try {
+                    const response = await fetch('/api/auth/login.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        localStorage.setItem('blacnova_auth', 'authenticated');
+                        localStorage.setItem('blacnova_user', JSON.stringify(data.user));
+                        localStorage.setItem('blacnova_token', data.token || '');
+                        authModal.classList.remove('active');
+                    } else {
+                        showToast(data.message || 'Invalid credentials', 'error');
+                    }
+                } catch (error) {
+                    showToast('Connection error. Please try again.', 'error');
+                }
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                // Successful login
-                localStorage.setItem('blacnova_auth', 'authenticated');
-                localStorage.setItem('blacnova_user', JSON.stringify(data.user));
-                localStorage.setItem('blacnova_token', data.token || '');
-                
-                // Remove the auth overlay
-                authOverlay.style.display = 'none';
-                
-                // Optional: Refresh the page to load authenticated content
-                // window.location.reload();
-            } else {
-                // Show error
-                errorElement.textContent = data.message || 'Invalid credentials';
-                errorElement.style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            errorElement.textContent = 'Connection error. Please try again.';
-            errorElement.style.display = 'block';
-        }
-    });
-})();
+        })();
     </script>
     <script src="BN-Dashboard.js"></script>
 </body>
