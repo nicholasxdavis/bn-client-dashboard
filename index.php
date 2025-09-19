@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF--8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link rel="icon" href="https://www.blacnova.net/img/logo_white.png" type="image/png">
     <title>Blacnova Dashboard</title>
     <style>
         body, html {
