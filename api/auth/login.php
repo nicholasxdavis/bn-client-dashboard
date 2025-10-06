@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+session_start();
+
 // Database connection settings
 $host = 'roscwoco0sc8w08kwsko8ko8';
 $db = 'default'; // Using the default database name
@@ -27,7 +29,7 @@ try {
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ];
-    
+
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Database connection failed: ' . $e->getMessage()]);
@@ -50,73 +52,23 @@ try {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
-            
-            CREATE TABLE settings (
+        ");
+    }
+
+    // Check if user_sessions table exists
+    $tableCheck = $pdo->query("SHOW TABLES LIKE 'user_sessions'");
+    if ($tableCheck->rowCount() == 0) {
+        $pdo->exec("
+            CREATE TABLE user_sessions (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                setting_key VARCHAR(255) NOT NULL UNIQUE,
-                setting_value TEXT,
+                user_id INT NOT NULL,
+                session_token VARCHAR(255) NOT NULL UNIQUE,
+                remember_token VARCHAR(255) UNIQUE,
+                expires_at TIMESTAMP NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             );
-            
-            CREATE TABLE blog_posts (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255) NOT NULL,
-                content TEXT,
-                excerpt TEXT,
-                slug VARCHAR(255) UNIQUE,
-                featured_image VARCHAR(255),
-                author_id INT,
-                status ENUM('draft', 'published', 'archived') DEFAULT 'draft',
-                published_at TIMESTAMP NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE submissions (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                subject VARCHAR(255),
-                message TEXT,
-                form_type ENUM('contact', 'newsletter', 'support') DEFAULT 'contact',
-                status ENUM('new', 'read', 'replied', 'archived') DEFAULT 'new',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE products (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                description TEXT,
-                price DECIMAL(10, 2) NOT NULL,
-                stock INT DEFAULT 0,
-                image VARCHAR(255),
-                status ENUM('active', 'inactive', 'out_of_stock') DEFAULT 'active',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE media (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                filename VARCHAR(255) NOT NULL,
-                original_name VARCHAR(255),
-                file_path VARCHAR(255) NOT NULL,
-                file_size INT,
-                mime_type VARCHAR(100),
-                uploaded_by INT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            -- Insert default admin user (password: Blacnova2025)
-            INSERT INTO users (email, password_hash, full_name, role) 
-            VALUES ('admin@blacnova.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Admin User', 'admin');
-            
-            -- Insert some default settings
-            INSERT INTO settings (setting_key, setting_value) VALUES 
-            ('site_title', 'Blacnova'),
-            ('site_description', 'Premium Development Services'),
-            ('primary_color', '#d4611c'),
-            ('admin_email', 'admin@blacnova.com');
         ");
     }
 } catch (\PDOException $e) {
@@ -128,6 +80,7 @@ try {
 $data = json_decode(file_get_contents('php://input'), true);
 $email = $data['email'] ?? '';
 $password = $data['password'] ?? '';
+$rememberMe = $data['rememberMe'] ?? false;
 
 // Validate input
 if (empty($email) || empty($password)) {
@@ -140,20 +93,46 @@ try {
     $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
     $stmt->execute([$email]);
     $user = $stmt->fetch();
-    
+
     if ($user && password_verify($password, $user['password_hash'])) {
         // Successful login
         unset($user['password_hash']); // Don't send password back
-        
-        // Create session token (optional)
+
+        // Create session
         $session_token = bin2hex(random_bytes(32));
+        $remember_token = null;
+        $expires_at = date('Y-m-d H:i:s', strtotime('+1 hour'));
+
+        if ($rememberMe) {
+            $remember_token = bin2hex(random_bytes(32));
+            $expires_at = date('Y-m-d H:i:s', strtotime('+30 days'));
+        }
+
+        // Store session in the database
+        $stmt = $pdo->prepare('INSERT INTO user_sessions (user_id, session_token, remember_token, expires_at) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$user['id'], $session_token, $remember_token, $expires_at]);
+
+        // Set session cookie
+        $cookie_options = [
+            'expires' => $rememberMe ? time() + (86400 * 30) : 0, // 30 days or session
+            'path' => '/',
+            'domain' => '.blacnova.net', // Set your domain here to share cookie across subdomains
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ];
+        setcookie('session_token', $session_token, $cookie_options);
+
+        if ($rememberMe) {
+            setcookie('remember_token', $remember_token, $cookie_options);
+        }
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
-        $_SESSION['token'] = $session_token;
-        
+
         echo json_encode([
-            'success' => true, 
+            'success' => true,
             'user' => $user,
             'token' => $session_token
         ]);
