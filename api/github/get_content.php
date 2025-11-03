@@ -3,7 +3,11 @@
  * Get content from GitHub repository
  */
 
-header('Content-Type: application/json');
+// Suppress errors and set JSON header first
+error_reporting(0);
+ini_set('display_errors', 0);
+
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -13,11 +17,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/../auth/session.php';
-require_once __DIR__ . '/config.php';
-
-session_start();
-validateRequest();
+try {
+    require_once __DIR__ . '/../auth/session.php';
+    require_once __DIR__ . '/config.php';
+    
+    if (!session_id()) {
+        session_start();
+    }
+    validateRequest();
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode([
+        'success' => false,
+        'message' => 'Authentication error'
+    ]);
+    exit;
+}
 
 $client = $_GET['client'] ?? 'chios';
 
