@@ -1,9 +1,12 @@
 <?php
 // session.php
-session_start();
+// Don't auto-start session - let calling code handle it
 
 // Check if user is logged in
 function isLoggedIn() {
+    if (!session_id()) {
+        return false;
+    }
     return isset($_SESSION['user_id']);
 }
 

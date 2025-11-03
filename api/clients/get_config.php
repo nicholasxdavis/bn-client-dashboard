@@ -17,19 +17,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-try {
-    require_once __DIR__ . '/../auth/session.php';
-    require_once __DIR__ . '/config.php';
-    
-    if (!session_id()) {
-        session_start();
-    }
-    validateRequest();
-} catch (Exception $e) {
-    http_response_code(500);
+// Start session first
+if (!session_id()) {
+    session_start();
+}
+
+// Load session functions
+require_once __DIR__ . '/../../session.php';
+require_once __DIR__ . '/config.php';
+
+// Validate request (check if logged in)
+if (!isLoggedIn()) {
+    http_response_code(401);
     echo json_encode([
         'success' => false,
-        'message' => 'Configuration error'
+        'message' => 'Authentication required'
     ]);
     exit;
 }
