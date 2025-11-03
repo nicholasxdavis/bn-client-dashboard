@@ -17,6 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
+// Configure session settings
+ini_set('session.cookie_httponly', '1');
+ini_set('session.use_only_cookies', '1');
+ini_set('session.cookie_samesite', 'Lax');
+
 // Start session first
 if (!session_id()) {
     session_start();
@@ -31,7 +36,7 @@ if (!isLoggedIn()) {
     http_response_code(401);
     echo json_encode([
         'success' => false,
-        'message' => 'Authentication required'
+        'message' => 'Authentication required. Please log in again.'
     ]);
     exit;
 }

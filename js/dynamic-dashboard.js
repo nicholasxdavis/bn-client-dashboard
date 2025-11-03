@@ -30,10 +30,23 @@
     
     async function loadClientDashboard() {
         try {
-            const response = await fetch(`/api/clients/get_config.php?client=${currentClientId}`);
+            const response = await fetch(`/api/clients/get_config.php?client=${currentClientId}`, {
+                method: 'GET',
+                credentials: 'same-origin', // Include cookies/session
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                let errorResult;
+                try {
+                    errorResult = JSON.parse(text);
+                } catch (e) {
+                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                }
+                throw new Error(errorResult.message || `HTTP ${response.status}`);
             }
             
             const text = await response.text();
@@ -48,6 +61,16 @@
             
             if (!result.success) {
                 console.error('Failed to load client config:', result.message);
+                
+                // If authentication error, redirect to login
+                if (result.message && result.message.includes('Authentication')) {
+                    showError('Session expired. Please log in again.');
+                    setTimeout(() => {
+                        window.location.href = '/admin/index.php';
+                    }, 2000);
+                    return;
+                }
+                
                 showError('Failed to load dashboard configuration');
                 return;
             }
@@ -57,7 +80,14 @@
             
         } catch (error) {
             console.error('Error loading dashboard config:', error);
-            showError('Error loading dashboard. Please refresh the page.');
+            if (error.message && error.message.includes('Authentication')) {
+                showError('Session expired. Please log in again.');
+                setTimeout(() => {
+                    window.location.href = '/admin/index.php';
+                }, 2000);
+            } else {
+                showError('Error loading dashboard. Please refresh the page.');
+            }
         }
     }
     
@@ -202,10 +232,23 @@
         container.innerHTML = '<div class="text-center py-12"><i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i><p class="text-gray-500">Loading content from GitHub...</p></div>';
         
         try {
-            const response = await fetch(`/api/github/get_content.php?client=${currentClientId}`);
+            const response = await fetch(`/api/github/get_content.php?client=${currentClientId}`, {
+                method: 'GET',
+                credentials: 'same-origin', // Include cookies/session
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                let errorResult;
+                try {
+                    errorResult = JSON.parse(text);
+                } catch (e) {
+                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+                }
+                throw new Error(errorResult.message || `HTTP ${response.status}`);
             }
             
             const text = await response.text();

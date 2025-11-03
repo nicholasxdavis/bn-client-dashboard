@@ -148,11 +148,16 @@ try {
         
         // Create session token (optional)
         $session_token = bin2hex(random_bytes(32));
+        
+        // Set session variables
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['client_id'] = $user['client_id'] ?? null;
         $_SESSION['token'] = $session_token;
+        
+        // Regenerate session ID for security (prevents session fixation)
+        session_regenerate_id(true);
         
         echo json_encode([
             'success' => true, 
