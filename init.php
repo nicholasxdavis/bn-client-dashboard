@@ -134,19 +134,28 @@ require_once __DIR__ . '/session.php';
                 $messages[] = "Users table created successfully.";
             }
             
+            // Check if client_id column exists, if not add it
+            try {
+                $pdo->exec("ALTER TABLE users ADD COLUMN client_id VARCHAR(50) DEFAULT NULL");
+            } catch (PDOException $e) {
+                // Column might already exist, ignore error
+            }
+            
             // Users to create/update
             $users = [
                 [
                     'email' => 'chiosclean@gmail.com',
                     'password' => '2900',
                     'full_name' => 'Chios Cleaning Admin',
-                    'role' => 'admin'
+                    'role' => 'admin',
+                    'client_id' => 'chios'
                 ],
                 [
                     'email' => 'nic@blacnova.net',
                     'password' => '2900',
                     'full_name' => 'Nic Blacnova',
-                    'role' => 'admin'
+                    'role' => 'admin',
+                    'client_id' => null // Blacnova admin can access all clients
                 ]
             ];
             
@@ -165,25 +174,29 @@ require_once __DIR__ . '/session.php';
                 
                 $passwordHash = password_hash($password, PASSWORD_DEFAULT);
                 
+                $clientId = $userData['client_id'] ?? null;
+                
                 if ($existingUser) {
                     // Update existing user
-                    $stmt = $pdo->prepare('UPDATE users SET password_hash = ?, full_name = ?, role = ? WHERE email = ?');
-                    $stmt->execute([$passwordHash, $fullName, $role, $email]);
+                    $stmt = $pdo->prepare('UPDATE users SET password_hash = ?, full_name = ?, role = ?, client_id = ? WHERE email = ?');
+                    $stmt->execute([$passwordHash, $fullName, $role, $clientId, $email]);
                     $results[] = [
                         'email' => $email,
                         'password' => $password,
                         'status' => 'exists',
-                        'message' => 'User updated'
+                        'message' => 'User updated',
+                        'client_id' => $clientId ?? 'All clients'
                     ];
                 } else {
                     // Create new user
-                    $stmt = $pdo->prepare('INSERT INTO users (email, password_hash, full_name, role) VALUES (?, ?, ?, ?)');
-                    $stmt->execute([$email, $passwordHash, $fullName, $role]);
+                    $stmt = $pdo->prepare('INSERT INTO users (email, password_hash, full_name, role, client_id) VALUES (?, ?, ?, ?, ?)');
+                    $stmt->execute([$email, $passwordHash, $fullName, $role, $clientId]);
                     $results[] = [
                         'email' => $email,
                         'password' => $password,
                         'status' => 'created',
-                        'message' => 'User created'
+                        'message' => 'User created',
+                        'client_id' => $clientId ?? 'All clients'
                     ];
                 }
             }
@@ -209,13 +222,16 @@ require_once __DIR__ . '/session.php';
             echo '<div class="message success"><strong>✅ User Setup Complete!</strong></div>';
             echo '<div class="user-list">';
             foreach ($results as $result) {
-                echo '<div class="user-item">';
-                echo '<div>';
-                echo '<div class="user-email">' . htmlspecialchars($result['email']) . '</div>';
-                echo '<div class="user-password">Password: ' . htmlspecialchars($result['password']) . '</div>';
-                echo '</div>';
-                echo '<span class="status ' . htmlspecialchars($result['status']) . '">' . htmlspecialchars($result['message']) . '</span>';
-                echo '</div>';
+            echo '<div class="user-item">';
+            echo '<div>';
+            echo '<div class="user-email">' . htmlspecialchars($result['email']) . '</div>';
+            echo '<div class="user-password">Password: ' . htmlspecialchars($result['password']) . '</div>';
+            if (isset($result['client_id'])) {
+                echo '<div class="user-password" style="font-size: 11px; color: #999;">Client: ' . htmlspecialchars($result['client_id']) . '</div>';
+            }
+            echo '</div>';
+            echo '<span class="status ' . htmlspecialchars($result['status']) . '">' . htmlspecialchars($result['message']) . '</span>';
+            echo '</div>';
             }
             echo '</div>';
             echo '<div class="message info" style="margin-top: 20px;">';

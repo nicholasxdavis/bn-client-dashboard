@@ -47,6 +47,7 @@ try {
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255),
                 role ENUM('admin', 'editor', 'viewer') DEFAULT 'viewer',
+                client_id VARCHAR(50) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
@@ -150,12 +151,14 @@ try {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['client_id'] = $user['client_id'] ?? null;
         $_SESSION['token'] = $session_token;
         
         echo json_encode([
             'success' => true, 
             'user' => $user,
-            'token' => $session_token
+            'token' => $session_token,
+            'client_id' => $user['client_id'] ?? null
         ]);
     } else {
         // Invalid credentials

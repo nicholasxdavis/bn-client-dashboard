@@ -58,15 +58,7 @@
                     <i class="fas fa-cog w-5 text-center"></i>
                     <span>Settings</span>
                 </div>
-                <div class="nav-item p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="clients">
-                    <i class="fas fa-users w-5 text-center"></i>
-                    <span>Clients</span>
-                </div>
-                    <div class="nav-item p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="clients">
-                        <i class="fas fa-users w-5 text-center"></i>
-                        <span>Clients</span>
-                    </div>
-                    <div class="nav-item p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="support">
+                <div class="nav-item p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="support">
                         <i class="fas fa-question-circle w-5 text-center"></i>
                         <span>Support</span>
                     </div>
@@ -1461,9 +1453,20 @@
                 storage.setItem('blacnova_user', JSON.stringify(data.user));
                 storage.setItem('blacnova_token', data.token || '');
                 
+                // Store client_id if provided
+                if (data.client_id) {
+                    storage.setItem('blacnova_client_id', data.client_id);
+                }
+                
                 updateUserInfo(data.user);
                 authOverlay.style.opacity = '0';
-                setTimeout(() => authOverlay.style.display = 'none', 300);
+                setTimeout(() => {
+                    authOverlay.style.display = 'none';
+                    // Reload dashboard with client config
+                    if (window.reloadDashboard) {
+                        window.reloadDashboard();
+                    }
+                }, 300);
             } else {
                 errorElement.textContent = data.message || 'Invalid credentials';
                 errorElement.style.display = 'block';
@@ -1535,6 +1538,7 @@
     </script>
     <script src="BN-Dashboard.js"></script>
     <script src="js/client-editor.js"></script>
+    <script src="js/dynamic-dashboard.js"></script>
 </body>
 
 </html>
