@@ -47,7 +47,6 @@ try {
                 password_hash VARCHAR(255) NOT NULL,
                 full_name VARCHAR(255),
                 role ENUM('admin', 'editor', 'viewer') DEFAULT 'viewer',
-                client_id VARCHAR(50) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
@@ -148,22 +147,15 @@ try {
         
         // Create session token (optional)
         $session_token = bin2hex(random_bytes(32));
-        
-        // Set session variables
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
-        $_SESSION['client_id'] = $user['client_id'] ?? null;
         $_SESSION['token'] = $session_token;
-        
-        // Regenerate session ID for security (prevents session fixation)
-        session_regenerate_id(true);
         
         echo json_encode([
             'success' => true, 
             'user' => $user,
-            'token' => $session_token,
-            'client_id' => $user['client_id'] ?? null
+            'token' => $session_token
         ]);
     } else {
         // Invalid credentials

@@ -59,10 +59,10 @@
                     <span>Settings</span>
                 </div>
                 <div class="nav-item p-3 rounded-3xl flex items-center space-x-3 text-white" data-page="support">
-                        <i class="fas fa-question-circle w-5 text-center"></i>
-                        <span>Support</span>
-                    </div>
-                </nav>
+                    <i class="fas fa-question-circle w-5 text-center"></i>
+                    <span>Support</span>
+                </div>
+            </nav>
 
             <footer class="mt-auto text-center text-xs text-white/40 pt-6">
                 © 2025 Blacnova Development
@@ -845,37 +845,6 @@
                     </div>
                 </div>
                 
-                <div id="clients-page" class="page">
-                    <div class="flex justify-between items-center mb-8">
-                        <div>
-                            <h1 class="text-2xl font-medium">Client Websites</h1>
-                            <p class="text-gray-500">Edit client website content via GitHub</p>
-                        </div>
-                    </div>
-                    
-                    <div class="glass-card p-6 rounded-3xl">
-                        <div class="mb-6">
-                            <label class="block text-sm font-medium mb-2">Select Client</label>
-                            <select id="client-select" class="bg-white border border-gray-200 rounded-3xl px-4 py-2 w-full md:w-64">
-                                <option value="chios">Chios Cleaning</option>
-                            </select>
-                        </div>
-                        
-                        <div id="client-editor" class="space-y-6">
-                            <div class="text-center py-12">
-                                <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
-                                <p class="text-gray-500">Loading content...</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-end mt-6">
-                            <button id="save-client-content" class="btn-primary px-6 py-2 rounded-3xl" disabled>
-                                <i class="fas fa-save mr-2"></i> Save Changes
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
                 <div id="settings-page" class="page">
                     <div class="flex justify-between items-center mb-8">
                         <div>
@@ -1442,7 +1411,6 @@
         try {
             const response = await fetch('/api/auth/login.php', {
                 method: 'POST',
-                credentials: 'same-origin', // Include cookies/session
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
             });
@@ -1454,20 +1422,9 @@
                 storage.setItem('blacnova_user', JSON.stringify(data.user));
                 storage.setItem('blacnova_token', data.token || '');
                 
-                // Store client_id if provided
-                if (data.client_id) {
-                    storage.setItem('blacnova_client_id', data.client_id);
-                }
-                
                 updateUserInfo(data.user);
                 authOverlay.style.opacity = '0';
-                setTimeout(() => {
-                    authOverlay.style.display = 'none';
-                    // Reload dashboard with client config
-                    if (window.reloadDashboard) {
-                        window.reloadDashboard();
-                    }
-                }, 300);
+                setTimeout(() => authOverlay.style.display = 'none', 300);
             } else {
                 errorElement.textContent = data.message || 'Invalid credentials';
                 errorElement.style.display = 'block';
@@ -1538,8 +1495,6 @@
 })();
     </script>
     <script src="BN-Dashboard.js"></script>
-    <script src="js/client-editor.js"></script>
-    <script src="js/dynamic-dashboard.js"></script>
 </body>
 
 </html>
